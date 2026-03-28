@@ -1,0 +1,263 @@
+Initialisation et Fonctions :
+
+AfficherScores() {
+    Ouvrir fichier
+    Essayer d'ouvrir fichier "scores.txt" pour lire
+    
+    SI (fichier n'existe pas) ALORS {
+        Afficher "Aucun score enregistré"
+        RETOURNER
+    }
+    
+    scores_noms = tableau de 100 noms
+    scores_valeurs = tableau de 100 valeurs
+    scores_niveaux = tableau de 100 niveaux
+    nb_scores = 0
+    
+    TANT QUE (on peut lire une ligne) {
+        Lire (nom, essais, niveau)
+        scores_noms[nb_scores] = nom
+        scores_valeurs[nb_scores] = essais
+        scores_niveaux[nb_scores] = niveau
+        nb_scores = nb_scores + 1
+    }
+    
+    Fermer fichier
+    
+    SI (nb_scores > 0) ALORS {
+        POUR (i = 0 JUSQU'À nb_scores-2) {
+            POUR (j = i+1 JUSQU'À nb_scores-1) {
+                SI (scores_valeurs[i] > scores_valeurs[j]) ALORS {
+                    temp_nom = scores_noms[i]
+                    scores_noms[i] = scores_noms[j]
+                    scores_noms[j] = temp_nom
+                
+                    temp_val = scores_valeurs[i]
+                    scores_valeurs[i] = scores_valeurs[j]
+                    scores_valeurs[j] = temp_val
+                    
+                    temp_niv = scores_niveaux[i]
+                    scores_niveaux[i] = scores_niveaux[j]
+                    scores_niveaux[j] = temp_niv
+                }
+            }
+        }
+    }
+    
+    Afficher ("=== MEILLEURS SCORES ===")
+    
+    SI (nb_scores = 0) ALORS {
+        Afficher ("Aucun score")
+    } SINON {
+        limite = 10
+        SI (nb_scores < 10) ALORS {
+            limite = nb_scores
+        }
+        
+        POUR (i = 0 JUSQU'À limite-1) {
+            niveau_texte = "Débutant"
+            SI (scores_niveaux[i] = 2) ALORS {
+                niveau_texte = "Expert"
+            }
+            
+            Afficher ((i+1) + ". " + scores_noms[i] + " - " + scores_valeurs[i] + " essais (" + niveau_texte + ")")
+        }
+    }
+    
+    Afficher ("Appuyez sur Entrée...")
+    Lire attente
+}
+
+NouvellePartie() {
+    Afficher ("Joueur 1 (crée le code): ")
+    Lire (nom_joueur1)
+    
+    Afficher ("Joueur 2 (devine): ")
+    Lire (nom_joueur2)
+    
+    Afficher ("Choisir niveau:")
+    Afficher ("1. Débutant (chiffres différents)")
+    Afficher ("2. Expert (chiffres peuvent se répéter)")
+    Lire (niveau)
+    
+    code_secret = tableau de 5 cases
+    
+    SI (niveau = 1) ALORS {
+        POUR (i = 0 JUSQU'À 4) {
+            REPETER {
+                Afficher ("Chiffre " + (i+1) + ": ")
+                Lire (code_secret[i])
+                
+                SI (code_secret[i] < 0 OU code_secret[i] > 9) ALORS {
+                    Afficher ("Erreur: entre 0 et 9!")
+                    CONTINUER
+                }
+                
+                deja_utilise = faux
+                POUR (j = 0 JUSQU'À i-1) {
+                    SI (code_secret[j] = code_secret[i]) ALORS {
+                        deja_utilise = vrai
+                        Afficher ("Erreur: déjà utilisé!")
+                        SORTIR
+                    }
+                }
+            TANT QUE (deja_utilise = faux ET 0 ≤ code_secret[i] ≤ 9)
+            }
+        }
+        
+    } SINON {
+        POUR (i = 0 JUSQU'À 4) {
+            REPETER {
+                Afficher ("Chiffre " + (i+1) + ": ")
+                Lire (code_secret[i])
+                
+                SI (code_secret[i] < 0 OU code_secret[i] > 9) ALORS {
+                    Afficher ("Erreur: entre 0 et 9!")
+                }
+            TANT QUE (0 ≤ code_secret[i] ≤ 9)
+            }
+        }
+    }
+    
+    essais = 0
+    gagne = faux
+    
+    TANT QUE (essais < 20 ET gagne = faux) {
+        essais = essais + 1
+        
+        Afficher ("Essai " + essais + "/20")
+        
+        SI (essais ≥ 10) ALORS {
+            Afficher ("Voulez-vous un joker? (1=Oui, 0=Non)")
+            Lire (utiliser_joker)
+            
+            SI (utiliser_joker = 1) ALORS {
+                Afficher ("Type de joker:")
+                Afficher ("1. Voir un chiffre")
+                Afficher ("2. Exclure un chiffre")
+                Lire (type_joker)
+                
+                SI (type_joker = 1) ALORS {
+                    Afficher ("Quelle position? (1-5)")
+                    Lire (position)
+                    Afficher ("Position " + position + ": " + code_secret[position-1])
+                    essais = essais + 3
+                    
+                } SINON SI (type_joker = 2) ALORS {
+                    Afficher ("Quel chiffre? (0-9)")
+                    Lire (chiffre)
+                    
+                    trouve = faux
+                    POUR (i = 0 JUSQU'À 4) {
+                        SI (code_secret[i] = chiffre) ALORS {
+                            trouve = vrai
+                            SORTIR
+                        }
+                    }
+                    
+                    SI (trouve = vrai) ALORS {
+                        Afficher ("Le chiffre " + chiffre + " EST dans le code")
+                    } SINON {
+                        Afficher ("Le chiffre " + chiffre + " N'EST PAS dans le code")
+                    }
+                    
+                    essais = essais + 5
+                }
+            }
+        }
+        
+        tentative = tableau de 5 cases
+        
+        POUR (i = 0 JUSQU'À 4) {
+            Afficher ("Chiffre " + (i+1) + ": ")
+            Lire (tentative[i])
+            
+            TANT QUE (tentative[i] < 0 OU tentative[i] > 9) {
+                Afficher ("Erreur: 0-9 seulement! Réessayez: ")
+                Lire (tentative[i])
+            }
+        }
+        
+        bien_places = 0
+        mal_places = 0
+        
+        POUR (i = 0 JUSQU'À 4) {
+            SI (tentative[i] = code_secret[i]) ALORS {
+                bien_places = bien_places + 1
+            }
+        }
+        
+        secret_marque = [faux, faux, faux, faux, faux]
+        tentative_marque = [faux, faux, faux, faux, faux]
+        
+        POUR (i = 0 JUSQU'À 4) {
+            SI (tentative[i] = code_secret[i]) ALORS {
+                secret_marque[i] = vrai
+                tentative_marque[i] = vrai
+            }
+        }
+        
+        POUR (i = 0 JUSQU'À 4) {
+            SI (tentative_marque[i] = faux) ALORS {
+                POUR (j = 0 JUSQU'À 4) {
+                    SI (secret_marque[j] = faux ET tentative[i] = code_secret[j]) ALORS {
+                        mal_places = mal_places + 1
+                        secret_marque[j] = vrai
+                        SORTIR de la boucle j
+                    }
+                }
+            }
+        }
+        
+        Afficher ("Résultat: " + bien_places + " bien, " + mal_places + " mal")
+        
+        SI (bien_places = 5) ALORS {
+            gagne = vrai
+            Afficher ("BRAVO! Trouvé en " + essais + " essais!")
+            
+            Ouvrir fichier "scores.txt" pour ajouter
+            Écrire nom_joueur2 + " " + essais + " " + niveau dans fichier
+            Fermer fichier
+        } SINON {
+            Afficher ("Essais restants: " + (20 - essais))
+        }
+    }
+    
+    SI (gagne = faux) ALORS {
+        Afficher ("PERDU! Code secret: ")
+        POUR (i = 0 JUSQU'À 4) {
+            Afficher (code_secret[i] + " ")
+        }
+        Afficher ("")
+    }
+    
+    Afficher ("Appuyez sur Entrée pour continuer...")
+    Lire (attente)
+}
+
+
+
+DÉBUT {
+    choix = 0
+    
+    TANT QUE (choix != 3) {
+        Afficher ("=== MASTERMIND ===")
+        Afficher ("1. Nouvelle partie")
+        Afficher ("2. Voir les meilleurs scores")
+        Afficher ("3. Quitter")
+        Afficher ("Votre choix: ")
+        
+        Lire (choix);
+        
+        SI choix = 1 ALORS {
+            Appeler NouvellePartie()
+        } SINON SI choix = 2 ALORS {
+            Appeler AfficherScores()
+        } SINON SI choix = 3 ALORS {
+            Afficher "Au revoir!"
+        } SINON {
+            Afficher "Choix invalide!"
+        }
+    }
+}
+    
